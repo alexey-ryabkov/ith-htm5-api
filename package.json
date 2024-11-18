@@ -1,0 +1,12 @@
+{
+  "name": "ith-htm5-api",
+  "version": "1.0.0",
+  "description": "ITHub HTML5 API course",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Alexey Ryabkov <xelaris@ya.com>",
+  "license": "ISC"
+}
