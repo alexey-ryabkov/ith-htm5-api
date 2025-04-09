@@ -1,49 +1,41 @@
 <script lang="ts">
 	import '../app.postcss';
-	import { AppShell, AppBar } from '@skeletonlabs/skeleton';
-
-	// Floating UI for Popups
+	import { initializeStores, storePopup, Modal, AppShell, AppBar } from '@skeletonlabs/skeleton';
 	import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
-	import { storePopup } from '@skeletonlabs/skeleton';
+	import Icon from '@iconify/svelte';
+
+	import YaMapLoader from '$lib/components/YaMapLoader.svelte';
+
+	initializeStores();
 	storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
 </script>
 
-<!-- App Shell -->
-<AppShell>
+<YaMapLoader />
+<Modal />
+
+<AppShell class="relative" slotHeader="z-30" slotPageFooter="relative z-30">
 	<svelte:fragment slot="header">
-		<!-- App Bar -->
-		<AppBar>
+		<AppBar background="none">
 			<svelte:fragment slot="lead">
-				<strong class="text-xl uppercase">Skeleton</strong>
-			</svelte:fragment>
-			<svelte:fragment slot="trail">
+				<span class="flex items-baseline gap-x-0.5">
+					<Icon icon="mdi:coffee-to-go" width="24" height="24" />
+					<strong class="text-xl">coffee walker </strong>
+				</span></svelte:fragment
+			>
+			<!-- <svelte:fragment slot="trail">
 				<a
 					class="btn btn-sm variant-ghost-surface"
-					href="https://discord.gg/EXqV7W8MtY"
-					target="_blank"
-					rel="noreferrer"
 				>
-					Discord
-				</a>
-				<a
-					class="btn btn-sm variant-ghost-surface"
-					href="https://twitter.com/SkeletonUI"
-					target="_blank"
-					rel="noreferrer"
-				>
-					Twitter
-				</a>
-				<a
-					class="btn btn-sm variant-ghost-surface"
-					href="https://github.com/skeletonlabs/skeleton"
-					target="_blank"
-					rel="noreferrer"
-				>
-					GitHub
-				</a>
-			</svelte:fragment>
+				</a>				
+			</svelte:fragment> -->
 		</AppBar>
 	</svelte:fragment>
-	<!-- Page Route Content -->
+	<svelte:fragment slot="pageFooter"
+		><div class="flex justify-center py-1">
+			<a href="https://github.com/alexey-ryabkov/ith-html5-api?tab=readme-ov-file" class="text-xs"
+				>О проекте</a
+			>
+		</div></svelte:fragment
+	>
 	<slot />
 </AppShell>
