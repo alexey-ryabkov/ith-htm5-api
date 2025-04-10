@@ -1,2 +1,5 @@
-export const DEFAULT_USER_COORDS = [55.751244, 37.618423];
+import type { MapCoords } from './types';
+
+export const DEFAULT_USER_COORDS: MapCoords = [55.751244, 37.618423];
 export const DEFAULT_MAP_ZOOM = 15;
+export const ERR_TOAST_TIMEOUT = 10_000;
