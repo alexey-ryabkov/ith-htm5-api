@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount, createEventDispatcher } from 'svelte';
-	// import { getModalStore } from '@skeletonlabs/skeleton';
+	import { getModalStore } from '@skeletonlabs/skeleton';
 	import { writable } from 'svelte/store';
 	import type { YMapLocationRequest } from 'ymaps3';
 
@@ -10,10 +10,11 @@
 	const dispatch = createEventDispatcher();
 
 	let mapContainer: HTMLDivElement;
-	// const hasPermission = writable(false);
-	// const modalStore = getModalStore();
+	const hasPermission = writable(false);
+	const modalStore = getModalStore();
 
-	let usetCoords = JSON.parse(localStorage.getItem('position') ?? 'null') ?? DEFAULT_USER_COORDS;
+	let usetCoords: [number, number] =
+		JSON.parse(localStorage.getItem('position') ?? 'null') ?? DEFAULT_USER_COORDS;
 
 	onMount(() => {
 		buildMap();
@@ -23,7 +24,7 @@
 		initMap(...usetCoords);
 	}
 
-	async function initMap(lat, lon): Promise<void> {
+	async function initMap(lat: number, lon: number): Promise<void> {
 		await wait4ymaps3();
 
 		const LOCATION: YMapLocationRequest = {

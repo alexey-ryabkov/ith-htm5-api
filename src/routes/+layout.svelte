@@ -17,10 +17,11 @@
 	<svelte:fragment slot="header">
 		<AppBar background="none">
 			<svelte:fragment slot="lead">
-				<span class="flex items-baseline gap-x-0.5">
-					<Icon icon="mdi:coffee-to-go" width="24" height="24" />
-					<strong class="text-xl">coffee walker </strong>
-				</span></svelte:fragment
+				<h1 class="h4 h-10 flex gap-x-0.5 text-cappuccino">
+					<span class="self-start">coffee</span>
+					<Icon icon="mdi:coffee-to-go" width="28" height="28" class="self-center" />
+					<span class="self-end">walker</span>
+				</h1></svelte:fragment
 			>
 			<!-- <svelte:fragment slot="trail">
 				<a
