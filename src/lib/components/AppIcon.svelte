@@ -1,4 +1,6 @@
 <script lang="ts">
+	// import Icon from '@iconify/svelte';
+
 	const DEFAULT_ICON_SIZE = 24;
 	const icons = {
 		'coffee-cup-walking-big': {

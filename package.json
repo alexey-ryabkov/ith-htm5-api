@@ -45,6 +45,7 @@
 		"vite-plugin-tailwind-purgecss": "0.3.3"
 	},
 	"dependencies": {
-		"@floating-ui/dom": "1.6.12"
+		"@floating-ui/dom": "1.6.12",
+		"nanoid": "5.1.5"
 	}
 }

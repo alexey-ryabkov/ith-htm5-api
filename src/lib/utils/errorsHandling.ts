@@ -1,9 +1,7 @@
-import { getToastStore } from '@skeletonlabs/skeleton';
 import AppError from '$lib/core/AppError';
 import type { ErrorHandler } from '$lib/types';
 import { ERR_TOAST_TIMEOUT } from '$lib/constants';
-
-const toastStore = getToastStore();
+import { triggerToast } from '$lib/utils/toaster';
 
 export const inNotificationBoundary = <T = unknown>(
 	func: () => T,
@@ -43,15 +41,16 @@ export function inErrorBoundary<T = unknown>(
 }
 
 export const showError2user: ErrorHandler = (err, message?: string, autohide = true) => {
-	const error = AppError.from(err);
-	message ??= `Произошла ошибка: ${error}`;
-	toastStore.trigger({
+	const error = appErrorHandler(err, !!message);
+	message ??= String(error);
+	triggerToast({
 		message,
 		background: 'variant-filled-error',
 		timeout: ERR_TOAST_TIMEOUT,
 		hoverable: autohide,
 		autohide
 	});
+	// return error;
 };
 
 export const defaultErrorHandler: ErrorHandler<void> = (err) => {
@@ -60,6 +59,9 @@ export const defaultErrorHandler: ErrorHandler<void> = (err) => {
 
 export const appErrorHandler: ErrorHandler<AppError> = (err, err2console = true) => {
 	const error = AppError.from(err);
-	if (err2console) console.error(`Error occurs: ${error}`);
+	if (err2console) {
+		console.error(`App error occurs: ${error}`);
+		console.dir(error);
+	}
 	return error;
 };

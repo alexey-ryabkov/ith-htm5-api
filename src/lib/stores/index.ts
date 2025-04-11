@@ -1,5 +1,2 @@
-import { writable } from 'svelte/store';
-
 export * from './persistent';
-
-export const mapIsReady = writable(false);
+export { default as map } from './map';
