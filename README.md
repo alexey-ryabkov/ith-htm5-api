@@ -1,40 +1,18 @@
-ITHub HTML5 API course
+Итоговая работа по курсу HTML5 API
 
-# create-svelte
+Создано веб-приложение для отслеживания "кофейных мест" на яндекс-карте, приложение доступно на [GitHub Pages](https://alexey-ryabkov.github.io/ith-html5-api/demo/)
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/main/packages/create-svelte).
+## Комментарии к реализации
 
-## Creating a project
+Для UI веб-приложения используется фреймворк [SvelteKit](https://kit.svelte.dev/) и UI-toolkit [Skeleton (v2)](v2.skeleton.dev). Используется Javascript API яндекс-карт 3ей версии. 
 
-If you're seeing this, you've probably already done this step. Congrats!
+Основная работа с яндекс-картой и Geolocation API происходит [в основном руте](/src/routes/+page.svelte), для работы с localStorage для хранения пользовательских данных используется [обертка над svelte-стором](/src/lib/core/storeCreators.ts).
 
-```bash
-# create a new project in the current directory
-npm create svelte@latest
+## Локальный запуск
 
-# create a new project in my-app
-npm create svelte@latest my-app
-```
-
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+Прописать ключ API яндекс-карт в .env.local (см. [.env.example](/.env.example))
 
 ```bash
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+npm i # установить зависимости проекта (сборка тестировалась с NodeJS версии 22.3)
+npm run dev # запуск на локальном dev-сервере
 ```
-
-## Building
-
-To create a production version of your app:
-
-```bash
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
