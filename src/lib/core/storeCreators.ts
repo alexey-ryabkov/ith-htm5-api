@@ -34,8 +34,6 @@ export function createCrudEntityStore<T extends CrudEntityItem>(
 function makeCrudEntityStore<T extends CrudEntityItem>(store: Writable<T[]>): CrudEntityStore<T> {
 	return {
 		subscribe: store.subscribe,
-		// set: store.set,
-		// update: store.update,
 		add(item) {
 			store.update((items) => [...items, item]);
 		},

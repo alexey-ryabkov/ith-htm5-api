@@ -13,6 +13,8 @@ export default {
 	theme: {
 		extend: {
 			colors: {
+				'seafoam-green': '#a3d1ce',
+				'lavender-blue': '#cbddfe',
 				cappuccino: {
 					DEFAULT: '#6f4f37',
 					50: '#F3ECE7',

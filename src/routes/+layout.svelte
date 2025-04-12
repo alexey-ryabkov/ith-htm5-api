@@ -14,6 +14,7 @@
 
 	import YaMapLoader from '$lib/components/YaMapLoader.svelte';
 	import { setToastStore } from '$lib/utils/toaster';
+	import { appInitialization } from '$lib/stores';
 
 	initializeStores();
 
@@ -28,9 +29,9 @@
 
 <AppShell class="relative" slotHeader="z-30" slotPageFooter="relative z-30">
 	<svelte:fragment slot="header">
-		<AppBar background="bg-seafoam-green">
+		<AppBar background={$appInitialization ? 'none' : 'bg-seafoam-green/85'}>
 			<svelte:fragment slot="lead">
-				<h1 class="h4 h-10 flex gap-x-0.5 text-cappuccino">
+				<h1 class="text-xl h-10 flex gap-x-0.5 text-cappuccino">
 					<span class="self-start">coffee</span>
 					<Icon icon="mdi:coffee-to-go" width="28" height="28" class="self-center" />
 					<span class="self-end">walker</span>

@@ -13,10 +13,11 @@ const map = readable<YMap | null>(null, (set) => {
 export async function initMap(container: HTMLDivElement, center: MapCoords) {
 	await wait4ymaps3();
 
-	const { YMap, YMapDefaultSchemeLayer } = ymaps3;
+	const { YMap, YMapDefaultSchemeLayer, YMapDefaultFeaturesLayer } = ymaps3;
 	const location: YMapLocationRequest = { center, zoom };
 	const mapInstance = new YMap(container, { location });
 	mapInstance.addChild(new YMapDefaultSchemeLayer({}));
+	mapInstance.addChild(new YMapDefaultFeaturesLayer({}));
 
 	if (_set) _set(mapInstance);
 }
