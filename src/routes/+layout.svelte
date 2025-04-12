@@ -44,7 +44,7 @@
 	</svelte:fragment>
 	<svelte:fragment slot="pageFooter"
 		><div class="flex justify-center py-1">
-			<a href="https://github.com/alexey-ryabkov/ith-html5-api?tab=readme-ov-file" class="text-xs"
+			<a href="https://github.com/alexey-ryabkov/ith-htm5-api?tab=readme-ov-file" class="text-xs"
 				>О проекте</a
 			>
 		</div>
