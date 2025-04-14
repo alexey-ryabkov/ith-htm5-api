@@ -8,7 +8,8 @@
 		| 'success'
 		| 'warning'
 		| 'error' = 'primary';
-	const { class: cls = '', $$slots: _, $$scope: __, ...attrs } = $$props;
+	// const { class: cls = '', $$slots: _, $$scope: __, ...attrs } = $$props;
+	const { class: cls = '', ...attrs } = $$restProps;
 </script>
 
 <div

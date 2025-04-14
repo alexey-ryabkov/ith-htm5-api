@@ -1,11 +1,69 @@
-<script lang="ts">
-	// import Icon from '@iconify/svelte';
-
-	const DEFAULT_ICON_SIZE = 24;
-	const icons = {
-		'coffee-cup-walking-big': {
-			viewbox: '0 0 1496 1365.3333',
-			path: `<g
+export const DEFAULT_ICON_SIZE = 24;
+export const icons = {
+	human: {
+		viewbox: '0 0 24 24',
+		path: `<path
+					fill="currentColor"
+					d="M12 1a2 2 0 0 0-2 2c0 1.11.89 2 2 2s2-.89 2-2a2 2 0 0 0-2-2m-2 5c-.27 0-.5.11-.69.28H9.3L4 11.59L5.42 13L9 9.41V22h2v-7h2v7h2V9.41L18.58 13L20 11.59l-5.3-5.31c-.2-.17-.43-.28-.7-.28"
+				/>`
+	},
+	'human-greeting': {
+		viewbox: '0 0 24 24',
+		path: `<path fill="currentColor" d="M12 2c1.1 0 2 .9 2 2s-.9 2-2 2s-2-.9-2-2s.9-2 2-2m3.9 6.1c-.4-.4-1.1-1.1-2.4-1.1H11C8.2 7 6 4.8 6 2H4c0 3.2 2.1 5.8 5 6.7V22h2v-6h2v6h2V10.1l4 3.9l1.4-1.4z" />`
+	},
+	'coffee-cup': {
+		viewbox: '0 0 24 24',
+		path: `<path fill="currentColor" d="M7 22h10a1 1 0 0 0 .99-.858L19.867 8H21V6h-1.382l-1.724-3.447A1 1 0 0 0 17 2H7c-.379 0-.725.214-.895.553L4.382 6H3v2h1.133L6.01 21.142A1 1 0 0 0 7 22m10.418-11H6.582l-.429-3h11.693zm-9.551 9l-.429-3h9.123l-.429 3zM7.618 4h8.764l1 2H6.618z" />`
+	},
+	pin: {
+		viewbox: '0 0 24 24',
+		path: `<path
+						fill="currentColor"
+						d="M14.102 2.664c.628-.416 1.692-.713 2.495.09l4.647 4.648c.806.804.508 1.868.091 2.495a2.95 2.95 0 0 1-.863.85c-.334.213-.756.374-1.211.35a9 9 0 0 1-.658-.071l-.068-.01a9 9 0 0 0-.707-.073c-.504-.025-.698.06-.76.12l-2.49 2.491c-.08.08-.18.258-.256.6c-.073.33-.105.736-.113 1.186c-.007.432.008.874.024 1.3l.001.047c.015.423.03.855.009 1.194c-.065 1.031-.868 1.79-1.658 2.141c-.79.35-1.917.437-2.7-.347l-2.25-2.25L3.53 21.53a.75.75 0 1 1-1.06-1.06l4.104-4.105l-2.25-2.25c-.783-.784-.697-1.91-.346-2.7c.35-.79 1.11-1.593 2.14-1.658c.34-.021.772-.006 1.195.009l.047.001c.426.015.868.031 1.3.024c.45-.008.856-.04 1.186-.113c.342-.076.52-.177.6-.257l2.49-2.49c.061-.061.146-.256.12-.76a9 9 0 0 0-.073-.707l-.009-.068a9 9 0 0 1-.071-.658c-.025-.455.136-.877.348-1.211c.216-.34.515-.64.851-.863"
+					/>`
+	},
+	cross: {
+		viewbox: '0 0 512 512',
+		path: `<path
+						fill="currentColor"
+						d="m330.443 256l136.765-136.765c14.058-14.058 14.058-36.85 0-50.908l-23.535-23.535c-14.058-14.058-36.85-14.058-50.908 0L256 181.557L119.235 44.792c-14.058-14.058-36.85-14.058-50.908 0L44.792 68.327c-14.058 14.058-14.058 36.85 0 50.908L181.557 256L44.792 392.765c-14.058 14.058-14.058 36.85 0 50.908l23.535 23.535c14.058 14.058 36.85 14.058 50.908 0L256 330.443l136.765 136.765c14.058 14.058 36.85 14.058 50.908 0l23.535-23.535c14.058-14.058 14.058-36.85 0-50.908z"
+					/>`
+	},
+	'cross-round': {
+		viewbox: '0 0 24 24',
+		path: `<path
+								fill="currentColor"
+								d="M12 4c-4.419 0-8 3.582-8 8s3.581 8 8 8s8-3.582 8-8s-3.581-8-8-8m3.707 10.293a.999.999 0 1 1-1.414 1.414L12 13.414l-2.293 2.293a.997.997 0 0 1-1.414 0a1 1 0 0 1 0-1.414L10.586 12L8.293 9.707a.999.999 0 1 1 1.414-1.414L12 10.586l2.293-2.293a.999.999 0 1 1 1.414 1.414L13.414 12z"
+							/>`
+	},
+	plus: {
+		viewbox: '0 0 448 512',
+		path: `<path
+									fill="currentColor"
+									d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32v144H48c-17.7 0-32 14.3-32 32s14.3 32 32 32h144v144c0 17.7 14.3 32 32 32s32-14.3 32-32V288h144c17.7 0 32-14.3 32-32s-14.3-32-32-32H256z"
+								/>`
+	},
+	'coffe-cup-arrow': {
+		viewbox: '0 0 24 24',
+		path: `<g
+							fill="none"
+							stroke="currentColor"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+						>
+							<path
+								fill="currentColor"
+								d="M14 4v7c0 1.66 -1.34 3 -3 3h-4c-1.66 0 -3 -1.34 -3 -3v-7Z"
+							/>
+							<path d="M14 4h3c0.55 0 1 0.45 1 1v3c0 0.55 -0.45 1 -1 1h-3" />
+							<path d="M4 18h15.5" />
+							<path d="M19.5 18l-3 -3M19.5 18l-3 3" />
+						</g>`
+	},
+	'coffee-cup-walking-big': {
+		viewbox: '0 0 1496 1365.3333',
+		path: `<g
       id="g1">
       <g
          id="g100">
@@ -26,30 +84,6 @@
             id="path14" />
       </g>
       </g>`
-		}
-		// check: `<path fill-rule="evenodd" d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm13.707-1.293a1 1 0 0 0-1.414-1.414L11 12.586l-1.793-1.793a1 1 0 0 0-1.414 1.414l2.5 2.5a1 1 0 0 0 1.414 0l4-4Z" clip-rule="evenodd"/>`,
-	};
-	export let name: keyof typeof icons;
-	export let size: [number, number | undefined] | number = DEFAULT_ICON_SIZE;
-	export let viewbox: string | undefined = undefined;
-	export let color = 'none';
-
-	if (typeof size === 'number') {
-		size = [size, undefined];
 	}
-</script>
-
-{#if icons[name]}
-	<svg
-		xmlns:xlink="http://www.w3.org/1999/xlink"
-		xmlns="http://www.w3.org/2000/svg"
-		width={size[0]}
-		height={size[1]}
-		fill={color}
-		viewBox={viewbox ?? icons[name].viewbox ?? `0 0 ${DEFAULT_ICON_SIZE} ${DEFAULT_ICON_SIZE}`}
-		aria-hidden="true"
-		{...$$restProps}
-	>
-		{@html icons[name].path}
-	</svg>
-{/if}
+};
+export type AppIconName = keyof typeof icons;
