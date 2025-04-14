@@ -9,5 +9,5 @@ import { createPersistentStore, createCrudEntityStore } from '$lib/core/storeCre
 export const userCode = createPersistentStore<string>('user_code', 'newcomer');
 export const userLocation = createPersistentStore<MapCoords>('user_location', DEFAULT_USER_COORDS);
 // export const userRoutes = createCrudEntityStore<UserRoute>('user_routes');
-export const coffeePoints = createCrudEntityStore<CoffeePoint>('coffee_points');
 export const userPoints = createCrudEntityStore<UserPoint>('user_points');
+export const userCoffeePoints = createCrudEntityStore<CoffeePoint>('coffee_points');

@@ -1,29 +1,50 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
-	import { get } from 'svelte/store';
+	import { get, writable } from 'svelte/store';
 	import type { YMap, YMapListener } from 'ymaps3';
-	import { getModalStore } from '@skeletonlabs/skeleton';
+	import { getModalStore, popup } from '@skeletonlabs/skeleton';
 	import { nanoid } from 'nanoid';
-	import Icon from '@iconify/svelte';
 
-	import { isNewcomer as checkIsNewcomer, hasPlaces as checkHasPlaces } from '$lib/core/helpers';
+	import {
+		isNewcomer as checkIsNewcomer,
+		hasPlaces as checkHasPlaces,
+		addMapMarker
+	} from '$lib/core/helpers';
 	import YaMap from '$lib/components/YaMap.svelte';
 	import AppIcon from '$lib/components/AppIcon.svelte';
 	import Preloader from '$lib/components/Preloader.svelte';
-	import { showError2user } from '$lib/utils';
-	import { appInitialization, map, userCode, userLocation, userPoints } from '$lib/stores';
-	import { DEFAULT_MAP_ZOOM, GEOCODE_RESULTS_LIMIT, GEOCODE_SEARCH_TEXT } from '$lib/constants';
-	import type { MapCoords } from '$lib/types';
+	import { hashCoords, showError2user } from '$lib/utils';
+	import {
+		appInitialization,
+		map,
+		userCode,
+		userCoffeePoints,
+		userLocation,
+		userPoints
+	} from '$lib/stores';
+	import {
+		DEFAULT_MAP_ZOOM,
+		GEOCODE_RESULTS_LIMIT,
+		GEOCODE_SEARCH_TEXT,
+		MAP_UPDATE_ANIMATION
+	} from '$lib/constants';
+	import type { CoffeePoint, MapCoords } from '$lib/types';
+	import MapPopup from '$lib/components/MapPopup.svelte';
+	import PopupBox from '$lib/components/PopupBox.svelte';
 
 	$: isMapBuilt = !!$map;
+	$: userCoffeePointIDs = $userCoffeePoints.map(({ id }) => id);
 	let mapListener: YMapListener | null = null;
 	let mapListenerUnsubscribe: (() => void) | null = null;
 
 	const isNewcomer = checkIsNewcomer();
 	const hasPlaces = checkHasPlaces();
 
+	const coffeePoints = writable<CoffeePoint[]>([]);
+
 	let addingPointName = '';
 	let isMarkersLoading = false;
+	let popupsContainer: HTMLElement | null = null;
 
 	let geocodePermission: PermissionState = 'prompt';
 	const { geolocation, permissions } = navigator;
@@ -65,10 +86,16 @@
 			geolocation.getCurrentPosition(
 				({ coords: { longitude, latitude } }) => {
 					$map!.update({
-						location: { center: [longitude, latitude], zoom: DEFAULT_MAP_ZOOM, duration: 300 }
+						location: {
+							center: [longitude, latitude],
+							zoom: DEFAULT_MAP_ZOOM,
+							duration: MAP_UPDATE_ANIMATION
+						}
 					});
 					userLocation.set([longitude, latitude]);
-					resolve();
+					setTimeout(() => {
+						resolve();
+					}, 1_000);
 				},
 				(error) => {
 					let message;
@@ -104,16 +131,15 @@
 		const mapInstance = get(map)!;
 		showUserlocation(mapInstance);
 		showUserPoints(mapInstance);
-		await showFoundCoffeePoints(mapInstance);
+		await showCoffeePoints(mapInstance);
 
 		isMarkersLoading = false;
 		appInitialization.set(false);
-		isNewcomer && userCode.set(nanoid()); // remembering the user
+		isNewcomer && userCode.set(nanoid(6)); // remembering the user
 	}
 
 	function showUserlocation(mapInstance: YMap) {
 		const { YMapMarker } = ymaps3;
-		// const mapInstance = $map!;
 
 		const markerElement = document.createElement('div');
 		markerElement.innerHTML = `<div class="user-location">
@@ -121,9 +147,6 @@
 				<path fill="currentColor" d="M12 2c1.1 0 2 .9 2 2s-.9 2-2 2s-2-.9-2-2s.9-2 2-2m3.9 6.1c-.4-.4-1.1-1.1-2.4-1.1H11C8.2 7 6 4.8 6 2H4c0 3.2 2.1 5.8 5 6.7V22h2v-6h2v6h2V10.1l4 3.9l1.4-1.4z" />
 			</svg>
 		</div>`;
-		// <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
-		// 	<path fill="currentColor" d="M19 2H5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h4l3 3l3-3h4a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2m-7 3c1.727 0 3 1.272 3 3s-1.273 3-3 3c-1.726 0-3-1.272-3-3s1.274-3 3-3M7.177 16c.558-1.723 2.496-3 4.823-3s4.266 1.277 4.823 3z" />
-		// </svg>
 		const marker = new YMapMarker(
 			{
 				coordinates: get(userLocation),
@@ -136,94 +159,66 @@
 	}
 
 	function addUserPoint(mapInstance: YMap, coordinates: MapCoords) {
-		const { YMapMarker } = ymaps3;
-		// const mapInstance = $map!;
-
-		const markerElement = document.createElement('div');
-		markerElement.innerHTML = `<div class="user-marker">
-			<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
-				<path fill="currentColor" d="M14.102 2.664c.628-.416 1.692-.713 2.495.09l4.647 4.648c.806.804.508 1.868.091 2.495a2.95 2.95 0 0 1-.863.85c-.334.213-.756.374-1.211.35a9 9 0 0 1-.658-.071l-.068-.01a9 9 0 0 0-.707-.073c-.504-.025-.698.06-.76.12l-2.49 2.491c-.08.08-.18.258-.256.6c-.073.33-.105.736-.113 1.186c-.007.432.008.874.024 1.3l.001.047c.015.423.03.855.009 1.194c-.065 1.031-.868 1.79-1.658 2.141c-.79.35-1.917.437-2.7-.347l-2.25-2.25L3.53 21.53a.75.75 0 1 1-1.06-1.06l4.104-4.105l-2.25-2.25c-.783-.784-.697-1.91-.346-2.7c.35-.79 1.11-1.593 2.14-1.658c.34-.021.772-.006 1.195.009l.047.001c.426.015.868.031 1.3.024c.45-.008.856-.04 1.186-.113c.342-.076.52-.177.6-.257l2.49-2.49c.061-.061.146-.256.12-.76a9 9 0 0 0-.073-.707l-.009-.068a9 9 0 0 1-.071-.658c-.025-.455.136-.877.348-1.211c.216-.34.515-.64.851-.863" />
-			</svg>		
-		</div>`;
-		// <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 16 16">
-		// 		<path fill="currentColor" fill-rule="evenodd" d="M10.5 2.255v-.01c.003-.03.013-.157-.361-.35C9.703 1.668 8.967 1.5 8 1.5s-1.703.169-2.138.394c-.375.194-.365.32-.362.351v.01c-.003.03-.013.157.362.35C6.297 2.832 7.033 3 8 3s1.703-.169 2.139-.394c.374-.194.364-.32.361-.351M12 2.25c0 .738-.433 1.294-1.136 1.669l.825 2.31c1.553.48 2.561 1.32 2.561 2.52c0 1.854-2.402 2.848-5.5 2.985V15a.75.75 0 0 1-1.5 0v-3.266c-3.098-.136-5.5-1.131-5.5-2.984c0-1.2 1.008-2.04 2.561-2.52l.825-2.311C4.433 3.544 4 2.988 4 2.25C4 .75 5.79 0 8 0s4 .75 4 2.25" clip-rule="evenodd" />
-		// 	</svg>
-		const marker = new YMapMarker(
-			{
-				coordinates,
-				draggable: false
-			},
-			markerElement
-		);
-
-		mapInstance.addChild(marker);
-		addingPointName = '';
+		const id = nanoid(8);
+		addMapMarker(mapInstance, id, 'user', coordinates, popupsContainer);
 		userPoints.add({
-			id: nanoid(),
-			name: addingPointName,
-			coordinates
+			id,
+			coordinates,
+			title: addingPointName
 		});
+		addingPointName = '';
 	}
 
 	function showUserPoints(mapInstance: YMap) {
-		const { YMapMarker } = ymaps3;
-		// const mapInstance = $map!;
-
-		get(userPoints).map(({ name, coordinates }) => {
-			const markerElement = document.createElement('div');
-			markerElement.innerHTML = `<div class="user-marker">
-				<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
-					<path fill="currentColor" d="M14.102 2.664c.628-.416 1.692-.713 2.495.09l4.647 4.648c.806.804.508 1.868.091 2.495a2.95 2.95 0 0 1-.863.85c-.334.213-.756.374-1.211.35a9 9 0 0 1-.658-.071l-.068-.01a9 9 0 0 0-.707-.073c-.504-.025-.698.06-.76.12l-2.49 2.491c-.08.08-.18.258-.256.6c-.073.33-.105.736-.113 1.186c-.007.432.008.874.024 1.3l.001.047c.015.423.03.855.009 1.194c-.065 1.031-.868 1.79-1.658 2.141c-.79.35-1.917.437-2.7-.347l-2.25-2.25L3.53 21.53a.75.75 0 1 1-1.06-1.06l4.104-4.105l-2.25-2.25c-.783-.784-.697-1.91-.346-2.7c.35-.79 1.11-1.593 2.14-1.658c.34-.021.772-.006 1.195.009l.047.001c.426.015.868.031 1.3.024c.45-.008.856-.04 1.186-.113c.342-.076.52-.177.6-.257l2.49-2.49c.061-.061.146-.256.12-.76a9 9 0 0 0-.073-.707l-.009-.068a9 9 0 0 1-.071-.658c-.025-.455.136-.877.348-1.211c.216-.34.515-.64.851-.863" />
-				</svg>		
-			</div>`;
-			const marker = new YMapMarker(
-				{
-					coordinates,
-					draggable: false
-				},
-				markerElement
-			);
-			mapInstance.addChild(marker);
+		get(userPoints).map(({ id, coordinates }) => {
+			addMapMarker(mapInstance, id, 'user', coordinates, popupsContainer);
 		});
 	}
 
 	async function findCoffeePoints(mapInstance: YMap) {
 		const { search } = ymaps3;
+
 		// console.log('current map bounds, center', mapInstance.bounds, mapInstance.center);
-		const found = await search({
+
+		const rawPoints = await search({
 			text: GEOCODE_SEARCH_TEXT,
 			limit: GEOCODE_RESULTS_LIMIT,
-			bounds: mapInstance.bounds
+			center: mapInstance.center as MapCoords,
+			bounds: mapInstance.bounds,
+			strictBounds: true
 		});
-		// console.log(found);
-		return found;
+
+		const points = rawPoints
+			.map(({ geometry, properties: { name: title, description } }) => {
+				const { coordinates: [lon, lat] = [] } = geometry ?? {};
+				const coordinates = [lon, lat] as MapCoords;
+				return coordinates.length
+					? {
+							id: hashCoords(coordinates),
+							title,
+							description,
+							coordinates
+						}
+					: null;
+			})
+			.filter((p) => p !== null);
+
+		coffeePoints.set(points);
 	}
 
-	async function showFoundCoffeePoints(mapInstance: YMap) {
-		const { YMapMarker } = ymaps3;
-		const coffeePoints = await findCoffeePoints(mapInstance);
-		coffeePoints.map(({ geometry, properties: { name } }) => {
-			const { coordinates } = geometry ?? {};
-			// const  =
-			if (coordinates) {
-				const markerElement = document.createElement('div');
-				markerElement.innerHTML = `<div class="coffee-marker">
-					<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
-						<path fill="currentColor" d="M7 22h10a1 1 0 0 0 .99-.858L19.867 8H21V6h-1.382l-1.724-3.447A1 1 0 0 0 17 2H7c-.379 0-.725.214-.895.553L4.382 6H3v2h1.133L6.01 21.142A1 1 0 0 0 7 22m10.418-11H6.582l-.429-3h11.693zm-9.551 9l-.429-3h9.123l-.429 3zM7.618 4h8.764l1 2H6.618z" />
-					</svg>
-				</div>`;
-				const marker = new YMapMarker(
-					{
-						coordinates,
-						draggable: false
-					},
-					markerElement
-				);
-				mapInstance.addChild(marker);
-			}
-		});
+	async function showCoffeePoints(mapInstance: YMap) {
+		await findCoffeePoints(mapInstance);
 
-		// console.log(results);
+		get(coffeePoints).map(({ coordinates }) => {
+			const pointId = hashCoords(coordinates);
+			addMapMarker(
+				mapInstance,
+				hashCoords(coordinates),
+				userCoffeePointIDs.includes(pointId) ? 'user-coffee' : 'coffee',
+				coordinates,
+				popupsContainer
+			);
+		});
 	}
 
 	async function geolocationInterface() {
@@ -250,7 +245,7 @@
 			title: 'Добавление места',
 			body: 'Кликните по точке на карте — появится метка места с заданным названием:',
 			buttonTextCancel: 'Отменить',
-			buttonTextSubmit: 'К карте',
+			buttonTextSubmit: 'Ок',
 			value: 'Новое место',
 			valueAttr: { type: 'text', minlength: 3, maxlength: 25, required: true },
 			response: (name: string) => {
@@ -292,9 +287,32 @@
 	<div
 		class="absolute top-0 px-4 h-[72px] z-40 w-full flex justify-end content-center items-center gap-4"
 	>
-		<button on:click={requestGeolocation} type="button" class="btn-icon variant-filled">
-			<Icon icon="fluent:location-arrow-16-filled" width="28" height="28" />
+		<button
+			on:click={requestGeolocation}
+			use:popup={{
+				event: 'hover',
+				target: 'locationPopup',
+				placement: 'bottom'
+			}}
+			type="button"
+			class="btn-icon variant-filled [&>svg]:pointer-events-none"
+		>
+			<svg
+				xmlns="http://www.w3.org/2000/svg"
+				width="28"
+				height="28"
+				viewBox="0 0 24 24"
+				{...$$props}
+			>
+				<path
+					fill="currentColor"
+					d="M12 1a2 2 0 0 0-2 2c0 1.11.89 2 2 2s2-.89 2-2a2 2 0 0 0-2-2m-2 5c-.27 0-.5.11-.69.28H9.3L4 11.59L5.42 13L9 9.41V22h2v-7h2v7h2V9.41L18.58 13L20 11.59l-5.3-5.31c-.2-.17-.43-.28-.7-.28"
+				/>
+			</svg>
 		</button>
+		<PopupBox variant="secondary" data-popup="locationPopup">
+			<p>Мое местоположение</p>
+		</PopupBox>
 		<button
 			on:click={() => {
 				if (addingPointName) {
@@ -303,8 +321,13 @@
 					showAddMarkerModal();
 				}
 			}}
+			use:popup={{
+				event: 'hover',
+				target: 'addPointPopup',
+				placement: 'bottom'
+			}}
 			type="button"
-			class="btn-icon variant-filled"
+			class="btn-icon variant-filled [&>svg]:pointer-events-none"
 		>
 			{#if addingPointName}
 				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 512 512">
@@ -320,9 +343,93 @@
 						d="M14.102 2.664c.628-.416 1.692-.713 2.495.09l4.647 4.648c.806.804.508 1.868.091 2.495a2.95 2.95 0 0 1-.863.85c-.334.213-.756.374-1.211.35a9 9 0 0 1-.658-.071l-.068-.01a9 9 0 0 0-.707-.073c-.504-.025-.698.06-.76.12l-2.49 2.491c-.08.08-.18.258-.256.6c-.073.33-.105.736-.113 1.186c-.007.432.008.874.024 1.3l.001.047c.015.423.03.855.009 1.194c-.065 1.031-.868 1.79-1.658 2.141c-.79.35-1.917.437-2.7-.347l-2.25-2.25L3.53 21.53a.75.75 0 1 1-1.06-1.06l4.104-4.105l-2.25-2.25c-.783-.784-.697-1.91-.346-2.7c.35-.79 1.11-1.593 2.14-1.658c.34-.021.772-.006 1.195.009l.047.001c.426.015.868.031 1.3.024c.45-.008.856-.04 1.186-.113c.342-.076.52-.177.6-.257l2.49-2.49c.061-.061.146-.256.12-.76a9 9 0 0 0-.073-.707l-.009-.068a9 9 0 0 1-.071-.658c-.025-.455.136-.877.348-1.211c.216-.34.515-.64.851-.863"
 					/>
 				</svg>
-				<!-- <Icon icon="material-symbols:add-location-rounded" width="28" height="28" /> -->
 			{/if}
 		</button>
+		<PopupBox variant="secondary" data-popup="addPointPopup">
+			<p>Добавить место</p>
+		</PopupBox>
+	</div>
+	<!-- <MapPopup mapMakerId={nanoid(8)}>test!!!</MapPopup> -->
+	<div bind:this={popupsContainer}>
+		{#each $userPoints as { id, title, description, coordinates }}
+			<MapPopup mapMakerId={id}>
+				<div class="flex flex-col gap-3">
+					<h3 class="h3">{title ?? id}</h3>
+					{#if description}
+						<p>{description}</p>
+					{/if}
+					<p>{coordinates}</p>
+					<button
+						class="btn variant-filled-error"
+						on:click={() => {
+							userPoints.remove(id);
+							document.querySelector(`[data-marker-id="${id}"]`)?.remove();
+						}}
+					>
+						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+							<path
+								fill="currentColor"
+								d="M12 4c-4.419 0-8 3.582-8 8s3.581 8 8 8s8-3.582 8-8s-3.581-8-8-8m3.707 10.293a.999.999 0 1 1-1.414 1.414L12 13.414l-2.293 2.293a.997.997 0 0 1-1.414 0a1 1 0 0 1 0-1.414L10.586 12L8.293 9.707a.999.999 0 1 1 1.414-1.414L12 10.586l2.293-2.293a.999.999 0 1 1 1.414 1.414L13.414 12z"
+							/>
+						</svg>
+						<span>удалить</span>
+					</button>
+				</div>
+			</MapPopup>
+		{/each}
+		{#each $coffeePoints as { id, title, description, coordinates }}
+			<MapPopup mapMakerId={id} type={userCoffeePointIDs.includes(id) ? 'user' : 'coffee'}>
+				<div class="flex flex-col gap-3">
+					<h3 class="h3">{title ?? id}</h3>
+					{#if description}
+						<p>{description}</p>
+					{/if}
+					<p>{coordinates}</p>
+					{#if !userCoffeePointIDs.includes(id)}
+						<button
+							class="btn variant-filled-primary"
+							on:click={() => {
+								userCoffeePoints.add({
+									id,
+									title,
+									description,
+									coordinates
+								});
+								document
+									.querySelector(`[data-marker-id="${id}"]`)
+									?.classList.replace('coffee-marker', 'user-coffee-marker');
+							}}
+						>
+							<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 448 512">
+								<path
+									fill="currentColor"
+									d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32v144H48c-17.7 0-32 14.3-32 32s14.3 32 32 32h144v144c0 17.7 14.3 32 32 32s32-14.3 32-32V288h144c17.7 0 32-14.3 32-32s-14.3-32-32-32H256z"
+								/>
+							</svg>
+							<span>в мои места</span>
+						</button>
+					{:else}
+						<button
+							class="btn variant-filled-error"
+							on:click={() => {
+								userCoffeePoints.remove(id);
+								document
+									.querySelector(`[data-marker-id="${id}"]`)
+									?.classList.replace('user-coffee-marker', 'coffee-marker');
+							}}
+						>
+							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+								<path
+									fill="currentColor"
+									d="M12 4c-4.419 0-8 3.582-8 8s3.581 8 8 8s8-3.582 8-8s-3.581-8-8-8m3.707 10.293a.999.999 0 1 1-1.414 1.414L12 13.414l-2.293 2.293a.997.997 0 0 1-1.414 0a1 1 0 0 1 0-1.414L10.586 12L8.293 9.707a.999.999 0 1 1 1.414-1.414L12 10.586l2.293-2.293a.999.999 0 1 1 1.414 1.414L13.414 12z"
+								/>
+							</svg>
+							<span>из моих мест</span>
+						</button>
+					{/if}
+				</div>
+			</MapPopup>
+		{/each}
 	</div>
 {/if}
 
@@ -370,11 +477,13 @@
 		@apply size-full;
 	}
 	:global(.coffee-marker) {
-		@apply text-cappuccino;
-		/* @apply text-primary-600; */
+		@apply text-cappuccino cursor-pointer;
 	}
 	:global(.user-marker) {
-		@apply text-surface-900;
+		@apply text-surface-900 cursor-pointer;
+	}
+	:global(.user-coffee-marker) {
+		@apply text-surface-900 cursor-pointer;
 	}
 	:global(.user-location) {
 		@apply text-tertiary-500;

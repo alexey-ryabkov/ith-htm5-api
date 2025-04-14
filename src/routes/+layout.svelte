@@ -10,7 +10,6 @@
 		AppBar
 	} from '@skeletonlabs/skeleton';
 	import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
-	import Icon from '@iconify/svelte';
 
 	import YaMapLoader from '$lib/components/YaMapLoader.svelte';
 	import { setToastStore } from '$lib/utils/toaster';
@@ -24,7 +23,7 @@
 </script>
 
 <YaMapLoader />
-<Modal />
+<Modal regionBackdrop="!bg-transparent" />
 <Toast />
 
 <AppShell class="relative" slotHeader="z-30" slotPageFooter="relative z-30">
@@ -33,7 +32,29 @@
 			<svelte:fragment slot="lead">
 				<h1 class="text-xl h-10 flex gap-x-0.5 text-cappuccino">
 					<span class="self-start">coffee</span>
-					<Icon icon="mdi:coffee-to-go" width="28" height="28" class="self-center" />
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						width="28"
+						height="28"
+						class="self-center"
+						viewBox="0 0 24 24"
+					>
+						<g
+							fill="none"
+							stroke="currentColor"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+						>
+							<path
+								fill="currentColor"
+								d="M14 4v7c0 1.66 -1.34 3 -3 3h-4c-1.66 0 -3 -1.34 -3 -3v-7Z"
+							/>
+							<path d="M14 4h3c0.55 0 1 0.45 1 1v3c0 0.55 -0.45 1 -1 1h-3" />
+							<path d="M4 18h15.5" />
+							<path d="M19.5 18l-3 -3M19.5 18l-3 3" />
+						</g>
+					</svg>
 					<span class="self-end">walker</span>
 				</h1></svelte:fragment
 			>

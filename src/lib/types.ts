@@ -9,8 +9,8 @@ export type MapCoords = [MapLongitude, MapLatitude];
 // [lon: number, lat: number];
 
 export type CrudEntityItem = {
-	id: string | number;
-	name: string;
+	id: string;
+	title: string;
 };
 interface CrudEntity<T extends CrudEntityItem> {
 	add(item: T): void;
